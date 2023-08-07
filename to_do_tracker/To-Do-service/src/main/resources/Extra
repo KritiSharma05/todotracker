@@ -1,0 +1,88 @@
+ @Override
+    public List<Task> getTasksWithOverDue(String userEmail) throws UserNotExistsException {
+        DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        Optional<User> user = repository.findById(userEmail);
+        if (user.isEmpty()) {
+            throw new UserNotExistsException();
+        }
+        List<Task> allTasks = user.get().getUserTask();
+        List<Task> tasksOverDue = new ArrayList<>();
+        for (Task task : allTasks) {
+            if (task.isStatus()) {
+                continue;
+            }
+            LocalDate dueDate =task.getTaskEndDate().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+            if (dueDate.isBefore(LocalDate.now())) {
+                tasksOverDue.add(task);
+            }
+        }
+        return tasksOverDue.stream().sorted(dueDateComparator).collect(Collectors.toList());
+    }
+    @Override
+    public List<Task> getTasksWithNearDueDate(String userEmail) throws UserNotExistsException {
+        DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        Optional<User> user = repository.findById(userEmail);
+        if (user.isEmpty()) {
+            throw new UserNotExistsException();
+        }
+        List<Task> allTasks = user.get().getUserTask();
+        List<Task> tasksNearingDueDate = new ArrayList<>();
+        for (Task task : allTasks) {
+            if (task.isStatus()) {
+                continue;
+            }
+            LocalDate dueDate =task.getTaskEndDate().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+            LocalDate tomorrowDate = LocalDate.now().plusDays(1);
+            if (dueDate.isAfter(tomorrowDate) || dueDate.isBefore(LocalDate.now())){
+                continue;
+            } else {
+                tasksNearingDueDate.add(task);
+            }
+        }
+        return tasksNearingDueDate.stream().sorted(dueDateComparator).collect(Collectors.toList());
+    }
+}
+
+
+//    @Override
+//    public String getUserName(String userEmailId) throws UserNotExistsException {
+//        if(repository.findById(userEmailId).isEmpty())
+//        {
+//            throw new UserNotExistsException();
+//        }
+//        User userObj=repository.findById(userEmailId).get();
+//        userObj.set.getUserFirstName().concat(userObj.getUserLastName());
+//
+////        Check Again
+//        return null;
+//    }
+
+
+   @Override
+    public User returnUserDetails(String userEmailId) throws UserNotExistsException {
+        if (repository.findById(userEmailId).isEmpty()) {
+            throw new UserNotExistsException();
+        }
+        repository.findById(userEmailId).get().setUserTask(null);
+        User userObj = repository.findById(userEmailId).get();
+        userObj.setUserTask(null);
+        return userObj;
+    }
+
+
+       @Override
+        public User updateUserData(String userEmailId, User user) throws UserNotExistsException {
+            if (repository.findById(user.getUserEmailId()).isEmpty()) {
+                throw new UserNotExistsException();
+            }
+            User userObj = repository.findById(userEmailId).get();
+            userObj.setUserGender(user.getUserGender());
+            userObj.setUserPassword(user.getUserPassword());
+            userObj.setDateOfBirth(user.getDateOfBirth());
+            repository.save(userObj);
+            return userObj;
+        }

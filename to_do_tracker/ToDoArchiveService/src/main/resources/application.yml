@@ -1,0 +1,19 @@
+Spring:
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ToDoArchieveService
+  application:
+    name: ToDoArchieveService
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_SERVER_IP:localhost}:${EUREKA_SERVER_PORT:8761}/eureka
+    fetchRegistry: true
+    registerWithEureka: true
+
+server:
+  error:
+    include-message: always
+  port: 8002
